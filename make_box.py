@@ -1,41 +1,15 @@
 import os
-from PIL import Image
+import re
+import sys
 
-def convert_picture():
-    archive = []
-    for d, dirs, files in os.walk(os.getcwd() + '/raw_data'):
-        for f in files:
-            path = os.path.join(d,f)
-            archive.append(path)
-
-    num = 0
-
-    for picture in archive:
-        image = Image.open(picture)
-        path = os.getcwd() + '/training_data/rgn.handwriting.exp' + str(num) + '.tif'
-        image.save(path)
-        num+=1
-
-def make_box():
-    os.chdir(os.getcwd() + '/training_data')
-    tiff_archive = []
-    for d, dirs, files in os.walk(os.getcwd()):
-        for f in files:
-            if 'tif' in f:
-                path = os.path.join(d,f)
-                tiff_archive.append(path)
-                
-    os.system ('cd C:\\Program Files (x86)\\Tesseract-OCR\\')
-    
-    for picture in tiff_archive:
-        box_path = picture[:-4]
-        os.system ('tesseract' + ' ' + picture + ' ' + box_path + ' batch.nochop makebox')
         
 def main():
-    convert_picture()
-    make_box()
+    old_picture = sys.argv[1]
+    new_picture = sys.argv[2]
+    box_name = re.sub('\.tif', '', new_picture)
+
+    os.system ('convert ' + old_picture + ' -brightness-contrast -50% -monochrome -normalize -sharpen 0x3.0 -morphology close diamond:0.05 ' + new_picture)
+    os.system ('tesseract ' + new_picture + ' ' + box_name + ' batch.nochop makebox')
 
 if __name__ == '__main__':
     main()
-
- 
